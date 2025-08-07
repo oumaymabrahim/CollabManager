@@ -2,15 +2,13 @@ package com.proxym.collabmanager.services;
 
 import com.proxym.collabmanager.entities.Utilisateur;
 import com.proxym.collabmanager.enums.Role;
-import com.proxym.collabmanager.enums.StatutTache;
 import com.proxym.collabmanager.repositories.UtilisateurRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,11 +19,9 @@ import java.util.Optional;
 @Transactional
 public class UtilisateurService implements UserDetailsService {
 
-    @Autowired
     private final UtilisateurRepository utilisateurRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    // Suppression de l'injection du PasswordEncoder pour éviter la dépendance circulaire
+    // Le PasswordEncoder sera injecté dans AuthService où il est réellement nécessaire
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -35,14 +31,8 @@ public class UtilisateurService implements UserDetailsService {
         return utilisateur;
     }
 
-    // Créer un nouvel utilisateur avec mot de passe encodé
-    public Utilisateur createUtilisateur(Utilisateur utilisateur) {
-        // Encoder le mot de passe
-        utilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
-        return utilisateurRepository.save(utilisateur);
-    }
-
-    // Créer ou mettre à jour un utilisateur
+    // Méthode pour sauvegarder un utilisateur (sans encoder le mot de passe)
+    // L'encodage se fera dans AuthService
     public Utilisateur saveUtilisateur(Utilisateur utilisateur) {
         return utilisateurRepository.save(utilisateur);
     }
@@ -67,10 +57,6 @@ public class UtilisateurService implements UserDetailsService {
         return utilisateurRepository.findByEmail(email);
     }
 
-    // Vérifier si un email existe
-    public boolean emailExiste(String email) {
-        return utilisateurRepository.existsByEmail(email);
-    }
 
     // Recherche par nom (partiel, insensible à la casse)
     public List<Utilisateur> getUtilisateursParNom(String nom) {
@@ -87,18 +73,6 @@ public class UtilisateurService implements UserDetailsService {
         return utilisateurRepository.countByRole(role);
     }
 
-    // Utilisateurs participants à un projet
-    public List<Utilisateur> getUtilisateursParProjet(Long projetId) {
-        return utilisateurRepository.findByProjetsId(projetId);
-    }
 
-    // Utilisateurs ayant des tâches dans un projet
-    public List<Utilisateur> getUtilisateursAvecTachesDansProjet(Long projetId) {
-        return utilisateurRepository.findDistinctByTaches_Projet_Id(projetId);
-    }
 
-    // Utilisateurs actifs (avec tâches en cours)
-    public List<Utilisateur> getUtilisateursActifs() {
-        return utilisateurRepository.findDistinctByTachesStatut(StatutTache.EN_COURS);
-    }
 }
