@@ -13,9 +13,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
@@ -178,20 +180,58 @@ public class UtilisateurController {
         }
     }
 
-    // Obtenir tous les utilisateurs - ADMIN seulement
+
+
+//    // Obtenir tous les utilisateurs - ADMIN seulement
+//    @GetMapping("/all")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<?> getAllUtilisateurs() {
+//        try {
+//            List<Utilisateur> utilisateurs = utilisateurService.getAllUtilisateurs();
+//            // Ne pas retourner les mots de passe
+//            utilisateurs.forEach(u -> u.setMotDePasse(null));
+//            return ResponseEntity.ok(utilisateurs);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(Map.of("error", "Erreur lors de la récupération des utilisateurs", "message", e.getMessage()));
+//        }
+//    }
+
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllUtilisateurs() {
         try {
             List<Utilisateur> utilisateurs = utilisateurService.getAllUtilisateurs();
-            // Ne pas retourner les mots de passe
-            utilisateurs.forEach(u -> u.setMotDePasse(null));
-            return ResponseEntity.ok(utilisateurs);
+
+            // SOLUTION 1 : Utiliser HashMap pour mélanger les types
+            List<Map<String, Object>> utilisateursSimplifies = utilisateurs.stream()
+                    .map(u -> {
+                        Map<String, Object> userMap = new HashMap<>();
+                        userMap.put("id", u.getId());
+                        userMap.put("nom", u.getNom());
+                        userMap.put("email", u.getEmail());
+                        userMap.put("role", u.getRole().toString());
+                        userMap.put("nombreTaches", u.getTaches() != null ? u.getTaches().size() : 0);
+                        userMap.put("nombreProjets", u.getProjets() != null ? u.getProjets().size() : 0);
+                        return userMap;
+                    })
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(utilisateursSimplifies);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Erreur lors de la récupération des utilisateurs", "message", e.getMessage()));
         }
     }
+
+
+
+
+
+
+
+
 
     // NOUVEAU : ADMIN - Obtenir les détails complets d'un utilisateur - ADMIN seulement
     @GetMapping("/admin/{id}/details")

@@ -66,7 +66,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/api/projets/statut").hasAnyAuthority("ROLE_ADMIN", "ROLE_CHEF_DE_PROJECT", "ROLE_MEMBRE_EQUIPE")
                         .requestMatchers(HttpMethod.GET, "/api/projets/{id}/projet").hasAnyAuthority("ROLE_ADMIN", "ROLE_CHEF_DE_PROJECT", "ROLE_MEMBRE_EQUIPE")
-                        .requestMatchers(HttpMethod.GET, "/api/projets/{id}/participants").hasAnyAuthority("ROLE_ADMIN", "ROLE_CHEF_DE_PROJECT", "ROLE_MEMBRE_EQUIPE")
+                        .requestMatchers(HttpMethod.GET, "/api/projets/{id}/participants").hasAnyAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/projets/mes-projets").hasAnyAuthority("ROLE_CHEF_DE_PROJECT", "ROLE_MEMBRE_EQUIPE")
 
                         // TACHES
